@@ -1,54 +1,90 @@
-# setup-firebase (Alternative for [firebase-action](https://github.com/w9jds/firebase-action))
+# setup-firebase
 
-This action provides the following functionality for GitHub Actions:
+A GitHub Action that installs and authenticates the [`firebase-tools`](https://github.com/firebase/firebase-tools) CLI for use in the current job.
 
-- Install `firebase-tools` CLI for use inside the current job
-- Specify which version of the CLI to install
-- Allows you to configure authentication and project
-- Allows you to customize your environment for what you need
-  - Specific Node version (via `actions/setup-node`)
-  - Java if needed and specified version (via `actions/setup-java`)
+This action provides the following functionality:
 
-# Usage
+- Install the `firebase-tools` CLI for use inside the current job
+- Pin a specific version of the CLI to install
+- Authenticate the CLI using a Google Cloud service account key
+- Optionally activate a Firebase project (deprecated — see below)
 
-_**Important: For this action to work properly `actions/setup-node` needs to be used**_
+> **Credit:** This is a fork of [`w9jds/setup-firebase`](https://github.com/w9jds/setup-firebase) by
+> Jeremy Shore, modernized and maintained by Engineering 11. Thanks to Jeremy for the original work.
 
-See [action.yml](https://github.com/w9jds/setup-firebase/blob/main/action.yml)
+## Usage
 
-**Basic example:**
+> **Important:** `firebase-tools` is installed with `npm install -g`, so
+> [`actions/setup-node`](https://github.com/actions/setup-node) must run first.
+
+See [action.yml](action.yml) for the full input reference.
+
+### Inputs
+
+| Input           | Required | Description                                                                                                                                |
+| --------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `gcp_sa_key`    | no       | Service account key (raw or base64-encoded JSON) used to authenticate `firebase-tools`. Exported as `GOOGLE_APPLICATION_CREDENTIALS`.      |
+| `tools-version` | no       | Version of `firebase-tools` to install. Defaults to the latest release.                                                                    |
+| `project_id`    | no       | **Deprecated.** Project to activate via `firebase use`. May be a project ID or a `.firebaserc` alias. Prefer `--project` on your commands. |
+| `project_path`  | no       | **Deprecated.** Path to the folder containing `firebase.json` / `.firebaserc`; used as the working directory when activating the project.  |
+
+Authentication uses a Google Cloud service account: pass its key as `gcp_sa_key`
+(raw JSON or base64-encoded). The key is written to the runner's temporary
+directory and exported as `GOOGLE_APPLICATION_CREDENTIALS`.
+
+> **Note:** `project_id` and `project_path` are deprecated and will be removed
+> in a future release. Prefer passing `--project <id>` directly to your firebase
+> commands.
+
+### Basic example
+
 ```yaml
 steps:
-  - uses: actions/checkout@master
-  - uses: actions/setup-node@v3
-  - uses: w9jds/setup-firebase@main
+  - uses: actions/checkout@v4
+  - uses: actions/setup-node@v4
     with:
-      tools-version: 11.9.0
-      firebase_token: ${{ secrets.FIREBASE_TOKEN }}
-  - run: firebase deploy --only hosting
-  - run: firebase deploy --only functions
+      node-version: 20
+  - uses: e11community/setup-firebase@main
+    with:
+      tools-version: 13.0.0
+      gcp_sa_key: ${{ secrets.GCP_SA_KEY }}
+  - run: firebase deploy --only hosting --project my-project
+  - run: firebase deploy --only functions --project my-project
 ```
 
-The `tools-version` is optional. If not supplied it will install the latest version of `firebase-tools`. 
+The `tools-version` is optional; if omitted, the latest `firebase-tools` is
+installed. Because major versions change behavior, pinning a version and
+upgrading deliberately is recommended.
 
-With some of the major versions removing and changing functionality, it is highly recommended you specify which version you want to use and upgrade as you need it.
+### Emulator example
 
-**Emulator example:**
 ```yaml
 steps:
-  - uses: actions/checkout@master
-  - uses: actions/setup-node@v3
+  - uses: actions/checkout@v4
+  - uses: actions/setup-node@v4
     with:
-      node-version: 18
-  - uses: actions/setup-java@v3
+      node-version: 20
+  - uses: actions/setup-java@v4
     with:
       java-version: 17
-  - uses: w9jds/setup-firebase@main
+  - uses: e11community/setup-firebase@main
     with:
-      tools-version: 11.9.0
-      firebase_token: ${{ secrets.FIREBASE_TOKEN }}
-  - run: firebase deploy --only hosting
-  - run: firebase deploy --only functions
+      tools-version: 13.0.0
+      gcp_sa_key: ${{ secrets.GCP_SA_KEY }}
+  - run: firebase emulators:exec --project my-project "npm test"
 ```
 
-# License
-The scripts and documents in this project are released under the [MIT License](https://github.com/w9jds/setup-firebase/blob/main/LICENSE)
+## Development
+
+```bash
+npm install
+npm run format   # prettier --write .
+npm run build    # bundles src/ into dist/setup/index.js via @vercel/ncc
+```
+
+The bundled `dist/setup/index.js` is committed and is what the action runs, so
+rebuild and commit it after changing anything under `src/`.
+
+## License
+
+Released under the [MIT License](LICENSE).

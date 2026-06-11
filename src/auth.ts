@@ -1,40 +1,30 @@
-import { writeFileSync } from "fs";
-import {
-  getInput,
-  info,
-  exportVariable,
-  startGroup,
-  endGroup,
-} from "@actions/core";
+import {writeFileSync} from 'node:fs'
+import {tmpdir} from 'node:os'
+import {join} from 'node:path'
+import {getInput, info, setSecret, exportVariable, startGroup, endGroup} from '@actions/core'
+
+const BASE64 = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/
 
 export const login = async () => {
-  startGroup("Firebase Authentication");
-  let key = getInput("gcp_sa_key");
-  const token = getInput("firebase_token");
+  startGroup('Firebase Authentication')
 
-  if (!key && !token) {
-    throw new Error(
-      "Either firebase_token or gcp_sa_key are required to authenticate firebase-tools"
-    );
+  let key = getInput('gcp_sa_key')
+  if (!key) {
+    throw new Error('gcp_sa_key is required to authenticate firebase-tools')
+  }
+  setSecret(key)
+
+  if (BASE64.test(key)) {
+    key = Buffer.from(key, 'base64').toString('utf8')
+    setSecret(key)
   }
 
-  if (token) {
-    info("Setting firebase token for use by CLI");
-    await exportVariable("FIREBASE_TOKEN", token);
-  }
+  // Write to the runner's temp dir, which is always writable, rather than /opt.
+  const keyPath = join(process.env.RUNNER_TEMP || tmpdir(), 'gcp_key.json')
 
-  if (key) {
-    const pattern =
-      /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
-    if (pattern.test(key)) {
-      const buffer = Buffer.from(key, "base64");
-      key = buffer.toString("ascii");
-    }
+  info(`Storing service account key into ${keyPath}`)
+  writeFileSync(keyPath, key)
+  exportVariable('GOOGLE_APPLICATION_CREDENTIALS', keyPath)
 
-    info("Storing service account key into /opt/gcp_key.json");
-    writeFileSync("/opt/gcp_key.json", key);
-    await exportVariable("GOOGLE_APPLICATION_CREDENTIALS", "/opt/gcp_key.json");
-  }
-
-  endGroup();
-};
+  endGroup()
+}

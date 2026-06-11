@@ -1,26 +1,26 @@
 name: Setup Firebase
-description: Setup the firebase-tools in this workflow step
-author: Jeremy Shore
+description: Setup the firebase-tools CLI in this workflow step
+author: Engineering 11
 inputs:
   tools-version:
-    description: Version of firebase-tools to install
-    required: false
-  firebase_token:
-    description: The token to use for authentication
+    description: Version of firebase-tools to install. Defaults to the latest release.
     required: false
   gcp_sa_key:
-    description: Service account key for authentication
+    description: Service account key (raw or base64-encoded JSON) used to authenticate firebase-tools.
     required: false
   project_id:
-    description: Specify a specific project to use for all commands
+    description: >-
+      Deprecated. Project to activate via `firebase use`. May be a project ID or
+      a `.firebaserc` alias. Prefer passing `--project` to your firebase commands.
     required: false
   project_path:
-    description: Path to the folder containing firebase.json if it doesn't exist at the root of your repository
+    description: >-
+      Deprecated. Path to the folder containing firebase.json / .firebaserc; used
+      as the working directory when activating the project.
     required: false
 branding:
-  icon: 'activity'
-  color: 'gray-dark'
+  icon: activity
+  color: gray-dark
 runs:
-  using: node20
-  main: dist/setup/index.js
-  post-if: success()
+  using: node24
+  main: dist/action.js
