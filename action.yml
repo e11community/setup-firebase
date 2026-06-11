@@ -1,5 +1,5 @@
 name: Setup Firebase
-description: Setup the firebase-tools CLI in this workflow step
+description: Setup the firebase-tools CLI
 author: Engineering 11
 inputs:
   tools-version:
@@ -24,3 +24,4 @@ branding:
 runs:
   using: node24
   main: dist/action.js
+  post: dist/cleanup.js

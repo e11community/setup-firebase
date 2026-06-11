@@ -4,7 +4,9 @@
   "description": "Setup Firebase Action",
   "main": "dist/action.js",
   "scripts": {
-    "build": "esbuild src/setup-firebase.ts --bundle --platform=node --target=node24 --format=cjs --minify --outfile=dist/action.js",
+    "build": "npm run build:main && npm run build:cleanup",
+    "build:main": "esbuild src/setup-firebase.ts --bundle --platform=node --target=node24 --format=cjs --minify --outfile=dist/action.js",
+    "build:cleanup": "esbuild src/cleanup.ts --bundle --platform=node --target=node24 --format=cjs --minify --outfile=dist/cleanup.js",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format-check": "prettier --check ."

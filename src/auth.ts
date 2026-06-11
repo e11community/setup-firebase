@@ -1,7 +1,7 @@
 import {writeFileSync} from 'node:fs'
 import {tmpdir} from 'node:os'
 import {join} from 'node:path'
-import {getInput, info, setSecret, exportVariable, startGroup, endGroup} from '@actions/core'
+import {getInput, info, setSecret, exportVariable, saveState, startGroup, endGroup} from '@actions/core'
 
 const BASE64 = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/
 
@@ -25,6 +25,9 @@ export const login = async () => {
   info(`Storing service account key into ${keyPath}`)
   writeFileSync(keyPath, key)
   exportVariable('GOOGLE_APPLICATION_CREDENTIALS', keyPath)
+
+  // Record the path so the post step can remove the key after the job.
+  saveState('keyPath', keyPath)
 
   endGroup()
 }
