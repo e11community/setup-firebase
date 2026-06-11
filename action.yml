@@ -7,7 +7,7 @@ inputs:
     required: false
   gcp_sa_key:
     description: Service account key (raw or base64-encoded JSON) used to authenticate firebase-tools.
-    required: false
+    required: true
   project_id:
     description: >-
       Deprecated. Project to activate via `firebase use`. May be a project ID or
