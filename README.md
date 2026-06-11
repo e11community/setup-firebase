@@ -23,14 +23,16 @@ See [action.yml](action.yml) for the full input reference.
 
 | Input           | Required | Description                                                                                                                                |
 | --------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `gcp_sa_key`    | no       | Service account key (raw or base64-encoded JSON) used to authenticate `firebase-tools`. Exported as `GOOGLE_APPLICATION_CREDENTIALS`.      |
+| `gcp_sa_key`    | yes      | Service account key (raw or base64-encoded JSON) used to authenticate `firebase-tools`. Exported as `GOOGLE_APPLICATION_CREDENTIALS`.      |
 | `tools-version` | no       | Version of `firebase-tools` to install. Defaults to the latest release.                                                                    |
 | `project_id`    | no       | **Deprecated.** Project to activate via `firebase use`. May be a project ID or a `.firebaserc` alias. Prefer `--project` on your commands. |
 | `project_path`  | no       | **Deprecated.** Path to the folder containing `firebase.json` / `.firebaserc`; used as the working directory when activating the project.  |
 
-Authentication uses a Google Cloud service account: pass its key as `gcp_sa_key`
-(raw JSON or base64-encoded). The key is written to the runner's temporary
-directory and exported as `GOOGLE_APPLICATION_CREDENTIALS`.
+Authentication uses a Google Cloud service account and is required: pass its key
+as `gcp_sa_key` (raw JSON or base64-encoded). The key is written to the runner's
+temporary directory and exported as `GOOGLE_APPLICATION_CREDENTIALS`, then
+removed in a post-job step (relevant on self-hosted runners, where the temp
+directory persists after the job).
 
 > **Note:** `project_id` and `project_path` are deprecated and will be removed
 > in a future release. Prefer passing `--project <id>` directly to your firebase
@@ -78,12 +80,14 @@ steps:
 
 ```bash
 npm install
-npm run format   # prettier --write .
-npm run build    # bundles src/ into dist/setup/index.js via @vercel/ncc
+npm run format     # prettier --write .
+npm run typecheck  # tsc --noEmit
+npm run build      # esbuild bundles src/ into dist/action.js (main) and dist/cleanup.js (post)
 ```
 
-The bundled `dist/setup/index.js` is committed and is what the action runs, so
-rebuild and commit it after changing anything under `src/`.
+The bundled `dist/action.js` (main step) and `dist/cleanup.js` (post step) are
+committed and are what the action runs, so rebuild and commit them after
+changing anything under `src/`.
 
 ## License
 
