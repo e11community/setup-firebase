@@ -1,0 +1,24 @@
+# Validates that the PR title is a Conventional Commit. This repo squash-merges,
+# and the squash setting uses the PR title — so the PR title (not the branch
+# commits, which squash discards) is what release.yml parses to decide the bump.
+# Re-runs on `edited` so fixing the title clears the check.
+#
+# Uses `pull_request` (not `pull_request_target`): the workflow runs from the PR
+# head, so it validates the PR that introduces it and every PR thereafter. Safe
+# here — it reads the title from the event payload and checks out no PR code.
+name: pr-title
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: write # post/update a comment explaining a bad title
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
