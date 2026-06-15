@@ -19,6 +19,16 @@ This action provides the following functionality:
 
 See [action.yml](action.yml) for the full input reference.
 
+### Versioning
+
+Pin the action to a released version rather than a branch:
+
+- `e11community/setup-firebase@v1` — floating major tag; tracks the latest
+  `v1.x.y` release (recommended; gets patches automatically).
+- `e11community/setup-firebase@v1.0.0` — immutable pin to an exact release.
+
+Avoid `@main`; it is the unstable development branch.
+
 ### Inputs
 
 | Input           | Required | Description                                                                                                                                |
@@ -46,7 +56,7 @@ steps:
   - uses: actions/setup-node@v4
     with:
       node-version: 20
-  - uses: e11community/setup-firebase@main
+  - uses: e11community/setup-firebase@v1
     with:
       tools-version: 13.0.0
       gcp_sa_key: ${{ secrets.GCP_SA_KEY }}
@@ -69,7 +79,7 @@ steps:
   - uses: actions/setup-java@v4
     with:
       java-version: 17
-  - uses: e11community/setup-firebase@main
+  - uses: e11community/setup-firebase@v1
     with:
       tools-version: 13.0.0
       gcp_sa_key: ${{ secrets.GCP_SA_KEY }}

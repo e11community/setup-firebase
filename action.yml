@@ -18,6 +18,9 @@ inputs:
       Deprecated. Path to the folder containing firebase.json / .firebaserc; used
       as the working directory when activating the project.
     required: false
+outputs:
+  node-version:
+    description: Version of Node.js detected on the runner after setup.
 branding:
   icon: activity
   color: gray-dark
