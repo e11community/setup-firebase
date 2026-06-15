@@ -7,6 +7,7 @@
 # head, so it validates the PR that introduces it and every PR thereafter. Safe
 # here — it reads the title from the event payload and checks out no PR code.
 name: pr-title
+run-name: PR Title
 
 on:
   pull_request:

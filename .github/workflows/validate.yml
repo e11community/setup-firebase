@@ -1,7 +1,8 @@
 # Verifies the source type-checks, is formatted, builds — and crucially that the
 # committed dist/ bundle matches a fresh build, so the action never ships stale
 # code.
-name: check
+name: validate
+run-name: Validate
 
 on:
   pull_request:
