@@ -10,6 +10,7 @@ export const run = async () => {
     await install()
     await login()
     await setupProject()
+    await printEnvDetailsAndSetOutput()
   } catch (ex) {
     setFailed(ex instanceof Error ? ex.message : JSON.stringify(ex))
   }
