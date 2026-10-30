@@ -10,7 +10,18 @@ export const login = async () => {
 
   let key = getInput('gcp_sa_key')
   if (!key) {
-    throw new Error('gcp_sa_key is required to authenticate firebase-tools')
+    // No key: use the credentials an earlier step already exported, e.g.
+    // google-github-actions/auth with Workload Identity Federation. firebase-tools
+    // reads GOOGLE_APPLICATION_CREDENTIALS either way.
+    const existing = process.env.GOOGLE_APPLICATION_CREDENTIALS
+    if (!existing) {
+      throw new Error(
+        'gcp_sa_key is empty and GOOGLE_APPLICATION_CREDENTIALS is not set: pass a key, or authenticate first (e.g. google-github-actions/auth)'
+      )
+    }
+    info(`No gcp_sa_key; using the existing GOOGLE_APPLICATION_CREDENTIALS (${existing})`)
+    endGroup()
+    return
   }
   setSecret(key)
 
