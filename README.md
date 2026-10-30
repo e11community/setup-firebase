@@ -31,18 +31,32 @@ Avoid `@main`; it is the unstable development branch.
 
 ### Inputs
 
-| Input           | Required | Description                                                                                                                                |
-| --------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `gcp_sa_key`    | yes      | Service account key (raw or base64-encoded JSON) used to authenticate `firebase-tools`. Exported as `GOOGLE_APPLICATION_CREDENTIALS`.      |
-| `tools-version` | no       | Version of `firebase-tools` to install. Defaults to the latest release.                                                                    |
-| `project_id`    | no       | **Deprecated.** Project to activate via `firebase use`. May be a project ID or a `.firebaserc` alias. Prefer `--project` on your commands. |
-| `project_path`  | no       | **Deprecated.** Path to the folder containing `firebase.json` / `.firebaserc`; used as the working directory when activating the project.  |
+| Input           | Required | Description                                                                                                                                                                                                      |
+| --------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `gcp_sa_key`    | no       | Service account key (raw or base64-encoded JSON) used to authenticate `firebase-tools`. Exported as `GOOGLE_APPLICATION_CREDENTIALS`. Omit it when an earlier step already set `GOOGLE_APPLICATION_CREDENTIALS`. |
+| `tools-version` | no       | Version of `firebase-tools` to install. Defaults to the latest release.                                                                                                                                          |
+| `project_id`    | no       | **Deprecated.** Project to activate via `firebase use`. May be a project ID or a `.firebaserc` alias. Prefer `--project` on your commands.                                                                       |
+| `project_path`  | no       | **Deprecated.** Path to the folder containing `firebase.json` / `.firebaserc`; used as the working directory when activating the project.                                                                        |
 
-Authentication uses a Google Cloud service account and is required: pass its key
-as `gcp_sa_key` (raw JSON or base64-encoded). The key is written to the runner's
-temporary directory and exported as `GOOGLE_APPLICATION_CREDENTIALS`, then
-removed in a post-job step (relevant on self-hosted runners, where the temp
-directory persists after the job).
+Authentication uses a Google Cloud service account in one of two ways:
+
+- **A key:** pass it
+  as `gcp_sa_key` (raw JSON or base64-encoded). The key is written to the runner's
+  temporary directory and exported as `GOOGLE_APPLICATION_CREDENTIALS`, then
+  removed in a post-job step (relevant on self-hosted runners, where the temp
+  directory persists after the job).
+- **Credentials already on the runner:** omit `gcp_sa_key` after a step that
+  exports `GOOGLE_APPLICATION_CREDENTIALS`, such as `google-github-actions/auth`
+  with Workload Identity Federation (no stored key). The action uses that file
+  as is and removes nothing. With neither, the action fails.
+
+```yaml
+- uses: google-github-actions/auth@v3
+  with:
+    workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+    service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+- uses: e11community/setup-firebase@v1
+```
 
 > **Note:** `project_id` and `project_path` are deprecated and will be removed
 > in a future release. Prefer passing `--project <id>` directly to your firebase
